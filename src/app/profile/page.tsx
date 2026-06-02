@@ -33,7 +33,7 @@ export default function ProfilePage() {
           )}
           {isAdmin && (
             <div className="mt-3 flex items-center gap-1.5">
-              <Badge variant="primary" className="gap-1">
+              <Badge variant="default" className="gap-1">
                 <ShieldCheck size={11} />
                 {t("profile.admin")}
               </Badge>

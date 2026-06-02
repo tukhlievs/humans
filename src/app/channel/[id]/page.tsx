@@ -74,7 +74,7 @@ export default function ChannelPage({
                   {channel.tags.map((tag) => (
                     <Badge
                       key={tag}
-                      variant={tag === "GLOBAL" ? "primary" : "default"}
+                      variant={tag === "GLOBAL" ? "default" : "secondary"}
                     >
                       {tag}
                     </Badge>
