@@ -17,7 +17,6 @@ export default function HeroBackground() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let active = true;
     let frame = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let threeCleanup: (() => void) | null = null;
 
     import("three").then((THREE) => {
