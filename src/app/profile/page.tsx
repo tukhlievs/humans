@@ -2,11 +2,12 @@
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/Avatar";
 import { useApp } from "@/lib/store";
 
 export default function ProfilePage() {
-  const { user, t } = useApp();
+  const { user, isAdmin, t } = useApp();
   const name = user
     ? [user.firstName, user.lastName].filter(Boolean).join(" ")
     : t("profile.guest");
@@ -20,6 +21,11 @@ export default function ProfilePage() {
           <Avatar name={name} src={user?.photoUrl} size={96} />
           <h2 className="mt-4 text-xl font-semibold">{name}</h2>
           {user?.username ? <p className="text-sm text-muted">@{user.username}</p> : null}
+          {isAdmin ? (
+            <Badge tone="accent" className="mt-3">
+              {t("profile.admin")}
+            </Badge>
+          ) : null}
         </div>
 
         <p className="mt-6 border-t border-border pt-5 text-xs leading-relaxed text-muted">

@@ -18,6 +18,7 @@ export interface Channel {
   subscribers: number;
   tags: RegionTag[];
   verified?: boolean;
+  avatarUrl?: string;
 }
 
 export interface Person {

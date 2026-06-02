@@ -54,6 +54,11 @@ export function initTelegram(): void {
   }
 }
 
+/** Raw initData string — sent to the server for signature verification. */
+export function getInitData(): string {
+  return getWebApp()?.initData ?? "";
+}
+
 export function getTelegramUser(): TelegramUser | null {
   const user = getWebApp()?.initDataUnsafe?.user;
   if (!user) return null;

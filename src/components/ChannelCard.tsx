@@ -23,7 +23,7 @@ export function ChannelCard({ channel, index = 0 }: { channel: Channel; index?: 
     >
       <Link href={`/channel/${channel.id}`} onClick={() => haptic("light")}>
         <Card className="flex items-center gap-3.5 p-3.5 transition-colors hover:border-accent/40">
-          <Avatar name={channel.title} size={52} rounded="xl" />
+          <Avatar name={channel.title} src={channel.avatarUrl} size={52} rounded="xl" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <h3 className="truncate font-semibold">{channel.title}</h3>

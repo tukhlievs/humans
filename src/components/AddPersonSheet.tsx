@@ -14,17 +14,23 @@ export function AddPersonSheet({ open, onClose }: { open: boolean; onClose: () =
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("");
   const [interests, setInterests] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState(false);
 
   const reset = () => {
     setName("");
     setGoal("");
     setInterests("");
+    setError(false);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !goal.trim()) return;
-    addPerson({
+    if (!name.trim() || !goal.trim() || pending) return;
+
+    setPending(true);
+    setError(false);
+    const ok = await addPerson({
       name: name.trim(),
       goal: goal.trim(),
       interests: interests
@@ -32,6 +38,12 @@ export function AddPersonSheet({ open, onClose }: { open: boolean; onClose: () =
         .map((s) => s.trim())
         .filter(Boolean),
     });
+    setPending(false);
+
+    if (!ok) {
+      setError(true);
+      return;
+    }
     haptic("medium");
     reset();
     onClose();
@@ -89,12 +101,19 @@ export function AddPersonSheet({ open, onClose }: { open: boolean; onClose: () =
                   placeholder={t("form.interests.ph")}
                 />
               </div>
+
+              {error ? <p className="text-sm text-red-400">{t("form.error")}</p> : null}
+
               <div className="flex gap-3 pt-1">
                 <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>
                   {t("form.cancel")}
                 </Button>
-                <Button type="submit" className="flex-1" disabled={!name.trim() || !goal.trim()}>
-                  {t("form.save")}
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={!name.trim() || !goal.trim() || pending}
+                >
+                  {pending ? t("form.saving") : t("form.save")}
                 </Button>
               </div>
             </form>

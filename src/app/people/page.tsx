@@ -10,7 +10,7 @@ import { useApp } from "@/lib/store";
 import { haptic } from "@/lib/telegram";
 
 export default function PeoplePage() {
-  const { people, t } = useApp();
+  const { people, loadingPeople, t } = useApp();
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,7 +32,13 @@ export default function PeoplePage() {
         }
       />
 
-      {people.length === 0 ? (
+      {loadingPeople ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-[132px] animate-pulse rounded-2xl bg-surface" />
+          ))}
+        </div>
+      ) : people.length === 0 ? (
         <p className="mt-12 text-center text-sm text-muted">{t("people.empty")}</p>
       ) : (
         <div className="space-y-3">

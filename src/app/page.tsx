@@ -1,8 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { categories } from "@/lib/data";
 import { CategoryCard } from "@/components/CategoryCard";
+import { fetchChannels } from "@/lib/api";
 import { useT } from "@/lib/store";
 
 const HeroBackground = dynamic(() => import("@/components/three/HeroBackground"), {
@@ -11,6 +13,17 @@ const HeroBackground = dynamic(() => import("@/components/three/HeroBackground")
 
 export default function HomePage() {
   const t = useT();
+  const [counts, setCounts] = useState<Record<string, number> | null>(null);
+
+  useEffect(() => {
+    fetchChannels().then((list) => {
+      const next: Record<string, number> = {};
+      for (const channel of list) {
+        next[channel.category] = (next[channel.category] ?? 0) + 1;
+      }
+      setCounts(next);
+    });
+  }, []);
 
   return (
     <div className="animate-fade-in">
@@ -27,7 +40,12 @@ export default function HomePage() {
 
       <div className="space-y-3">
         {categories.map((category, index) => (
-          <CategoryCard key={category.slug} category={category} index={index} />
+          <CategoryCard
+            key={category.slug}
+            category={category}
+            index={index}
+            count={counts?.[category.slug]}
+          />
         ))}
       </div>
     </div>

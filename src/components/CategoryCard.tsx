@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Coins, Newspaper, BadgeCheck, PenLine, ChevronRight, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { getChannelsByCategory } from "@/lib/data";
 import { haptic } from "@/lib/telegram";
 import type { Category, CategorySlug } from "@/types";
 
@@ -15,9 +14,16 @@ const icons: Record<CategorySlug, LucideIcon> = {
   blog: PenLine,
 };
 
-export function CategoryCard({ category, index }: { category: Category; index: number }) {
+export function CategoryCard({
+  category,
+  index,
+  count,
+}: {
+  category: Category;
+  index: number;
+  count?: number;
+}) {
   const Icon = icons[category.slug];
-  const count = getChannelsByCategory(category.slug).length;
 
   return (
     <motion.div
@@ -34,7 +40,9 @@ export function CategoryCard({ category, index }: { category: Category; index: n
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h3 className="truncate font-semibold">{category.title}</h3>
-              <span className="shrink-0 text-xs text-muted">{count}</span>
+              {count !== undefined ? (
+                <span className="shrink-0 text-xs text-muted">{count}</span>
+              ) : null}
             </div>
             <p className="truncate text-sm text-muted">{category.subtitle}</p>
           </div>

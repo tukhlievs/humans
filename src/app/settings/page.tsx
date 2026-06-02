@@ -1,6 +1,7 @@
 "use client";
 
-import { AtSign, Send } from "lucide-react";
+import Link from "next/link";
+import { AtSign, Send, ShieldCheck, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
 import { useApp } from "@/lib/store";
@@ -13,11 +14,29 @@ const langs: { code: Lang; label: string }[] = [
 ];
 
 export default function SettingsPage() {
-  const { lang, setLang, t } = useApp();
+  const { lang, setLang, t, isAdmin } = useApp();
 
   return (
     <div className="animate-fade-in space-y-5">
       <PageHeader title={t("settings.title")} />
+
+      {isAdmin ? (
+        <Card className="p-0">
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 p-4 transition-colors hover:bg-surface-2/50"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+              <ShieldCheck size={18} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{t("settings.admin")}</p>
+              <p className="truncate text-sm text-muted">{t("admin.subtitle")}</p>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-muted" />
+          </Link>
+        </Card>
+      ) : null}
 
       <section>
         <p className="mb-2 px-1 text-xs uppercase tracking-wider text-muted">
