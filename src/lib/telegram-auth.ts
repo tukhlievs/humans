@@ -12,15 +12,28 @@ export interface VerifiedInitData {
 
 const enc = new TextEncoder();
 
-async function hmacSha256(key: BufferSource, message: string): Promise<Uint8Array> {
+/**
+ * HMAC-SHA256 helper.
+ *
+ * Note on the casts: TypeScript 5.7+ made `Uint8Array` generic over its backing
+ * buffer (`Uint8Array<ArrayBufferLike>`), and Web Crypto's `BufferSource` now
+ * only accepts `ArrayBuffer`-backed views. A plain `Uint8Array` is valid at
+ * runtime, so we assert the type at the call boundary to stay compatible across
+ * TypeScript versions and runtimes (Workers / Edge / browser).
+ */
+async function hmacSha256(key: Uint8Array, message: string): Promise<Uint8Array> {
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    key,
+    key as unknown as BufferSource,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
   );
-  const sig = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(message));
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    cryptoKey,
+    enc.encode(message) as unknown as BufferSource,
+  );
   return new Uint8Array(sig);
 }
 
