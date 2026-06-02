@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { verifyInitData } from "@/lib/telegram-auth";
 import { getSupabaseAdmin, isSupabaseServerConfigured } from "@/lib/supabase/server";
 
-export const runtime = "nodejs";
-
 export async function POST(req: Request) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken || !isSupabaseServerConfigured()) {
@@ -11,7 +9,7 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => ({}))) as { initData?: string };
-  const verified = verifyInitData(body.initData ?? "", botToken);
+  const verified = await verifyInitData(body.initData ?? "", botToken);
   if (!verified) {
     return NextResponse.json({ error: "invalid initData" }, { status: 401 });
   }

@@ -4,8 +4,6 @@ import { getSupabaseAdmin, isSupabaseServerConfigured } from "@/lib/supabase/ser
 import { parseChannel, fetchPhotoBytes } from "@/lib/telegram-parse";
 import { mapChannel, type ChannelRow } from "@/lib/mappers";
 
-export const runtime = "nodejs";
-
 const VALID_CATEGORIES = ["crypto", "news", "pro", "blog"];
 
 export async function POST(req: Request) {
@@ -26,7 +24,7 @@ export async function POST(req: Request) {
     subscribers?: number;
   };
 
-  const verified = verifyInitData(body.initData ?? "", botToken);
+  const verified = await verifyInitData(body.initData ?? "", botToken);
   if (!verified) {
     return NextResponse.json({ error: "invalid initData" }, { status: 401 });
   }
@@ -51,7 +49,6 @@ export async function POST(req: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  // Best-effort parse of title / description / subscribers / avatar from Telegram.
   const parsed = await parseChannel(username, botToken).catch(() => null);
 
   let avatarUrl: string | null = null;

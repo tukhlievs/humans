@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import * as THREE from "three";
 
 /**
- * Subtle Three.js backdrop: a slowly drifting point field in Telegram blue.
- * Deliberately low-contrast and quiet — it should read as texture, not decoration.
- * Honors prefers-reduced-motion and cleans up all GPU resources on unmount.
+ * Three.js is imported at RUNTIME inside useEffect — not at module level.
+ * This keeps it out of the esbuild analysis graph at build time so the
+ * Cloudflare Worker bundle stays fast and lightweight.
  */
 export default function HeroBackground() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -16,65 +15,76 @@ export default function HeroBackground() {
     if (!mount) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const width = mount.clientWidth;
-    const height = mount.clientHeight;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
-    camera.position.z = 6;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 0);
-    mount.appendChild(renderer.domElement);
-
-    const COUNT = 220;
-    const positions = new Float32Array(COUNT * 3);
-    for (let i = 0; i < COUNT; i += 1) {
-      positions[i * 3] = (Math.random() - 0.5) * 14;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 8;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 6;
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const material = new THREE.PointsMaterial({
-      color: 0x2f88ff,
-      size: 0.05,
-      transparent: true,
-      opacity: 0.55,
-      sizeAttenuation: true,
-    });
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
-
+    let active = true;
     let frame = 0;
-    const animate = () => {
-      points.rotation.y += 0.0009;
-      points.rotation.x += 0.0004;
-      renderer.render(scene, camera);
-      if (!reduceMotion) frame = requestAnimationFrame(animate);
-    };
-    animate();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let threeCleanup: (() => void) | null = null;
 
-    const onResize = () => {
-      const w = mount.clientWidth;
-      const h = mount.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-    window.addEventListener("resize", onResize);
+    import("three").then((THREE) => {
+      if (!active) return;
+
+      const width = mount.clientWidth || window.innerWidth;
+      const height = mount.clientHeight || window.innerHeight;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
+      camera.position.z = 6;
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x000000, 0);
+      mount.appendChild(renderer.domElement);
+
+      const COUNT = 220;
+      const positions = new Float32Array(COUNT * 3);
+      for (let i = 0; i < COUNT; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 14;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 8;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 6;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({
+        color: 0x2f88ff,
+        size: 0.05,
+        transparent: true,
+        opacity: 0.55,
+        sizeAttenuation: true,
+      });
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
+
+      const tick = () => {
+        if (!active) return;
+        points.rotation.y += 0.0009;
+        points.rotation.x += 0.0004;
+        renderer.render(scene, camera);
+        if (!reduceMotion) frame = requestAnimationFrame(tick);
+      };
+      if (reduceMotion) renderer.render(scene, camera);
+      else tick();
+
+      const onResize = () => {
+        camera.aspect = mount.clientWidth / mount.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(mount.clientWidth, mount.clientHeight);
+      };
+      window.addEventListener("resize", onResize);
+
+      threeCleanup = () => {
+        cancelAnimationFrame(frame);
+        window.removeEventListener("resize", onResize);
+        geometry.dispose();
+        material.dispose();
+        renderer.dispose();
+        try { mount.removeChild(renderer.domElement); } catch { /* already removed */ }
+      };
+    });
 
     return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("resize", onResize);
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-      if (renderer.domElement.parentNode === mount) {
-        mount.removeChild(renderer.domElement);
-      }
+      active = false;
+      threeCleanup?.();
     };
   }, []);
 

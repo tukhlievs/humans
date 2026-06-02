@@ -1,4 +1,8 @@
-import crypto from "crypto";
+/**
+ * Verifies Telegram Mini App initData using the Web Crypto API.
+ * No Node.js imports — runs natively on Cloudflare Workers, Edge, and browsers.
+ */
+
 import type { TelegramUser } from "@/types";
 
 export interface VerifiedInitData {
@@ -6,20 +10,43 @@ export interface VerifiedInitData {
   authDate: number;
 }
 
+const enc = new TextEncoder();
+
+async function hmacSha256(key: BufferSource, message: string): Promise<Uint8Array> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    key,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(message));
+  return new Uint8Array(sig);
+}
+
+/** Constant-time byte comparison — avoids timing attacks. */
+function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+function hexToBytes(hex: string): Uint8Array {
+  const pairs = hex.match(/.{2}/g);
+  if (!pairs) return new Uint8Array(0);
+  return new Uint8Array(pairs.map((b) => parseInt(b, 16)));
+}
+
 /**
- * Verifies Telegram Mini App initData per the official algorithm:
- *   secret = HMAC_SHA256("WebAppData", bot_token)
- *   hash   = HMAC_SHA256(secret, data_check_string)
- * where data_check_string is "key=value" pairs (all params except `hash`),
- * sorted by key and joined with "\n". Also rejects stale payloads.
- *
- * Runs in the Node.js runtime only (uses `crypto`). Returns null if invalid.
+ * Verifies Telegram initData per the official HMAC-SHA256 algorithm.
+ * Returns the verified user + authDate, or null if invalid / expired.
  */
-export function verifyInitData(
+export async function verifyInitData(
   initData: string,
   botToken: string,
   maxAgeSeconds = 86_400,
-): VerifiedInitData | null {
+): Promise<VerifiedInitData | null> {
   if (!initData || !botToken) return null;
 
   const params = new URLSearchParams(initData);
@@ -29,15 +56,13 @@ export function verifyInitData(
 
   const dataCheckString = [...params.entries()]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, value]) => `${key}=${value}`)
+    .map(([k, v]) => `${k}=${v}`)
     .join("\n");
 
-  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
-  const computed = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+  const secretKey = await hmacSha256(enc.encode("WebAppData"), botToken);
+  const computed = await hmacSha256(secretKey, dataCheckString);
 
-  const a = Buffer.from(computed, "hex");
-  const b = Buffer.from(hash, "hex");
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  if (!timingSafeEqual(computed, hexToBytes(hash))) return null;
 
   const authDate = Number(params.get("auth_date") ?? "0");
   if (!authDate || Date.now() / 1000 - authDate > maxAgeSeconds) return null;
