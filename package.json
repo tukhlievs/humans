@@ -5,8 +5,7 @@
   "description": "Humans — Telegram Mini App for discovering channels and people",
   "scripts": {
     "dev": "next dev",
-    "build": "opennextjs-cloudflare build",
-    "build:next": "next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
