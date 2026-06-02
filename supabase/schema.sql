@@ -78,16 +78,14 @@ create policy "people public read"
   using (true);
 
 -- ============================================================
--- Storage — публичный бакет для аватарок каналов
+-- Storage — публичный бакет для аватарок каналов.
+-- Бакет публичный, поэтому файлы отдаются по прямому URL без RLS-политики.
+-- Отдельную SELECT-политику на storage.objects НЕ создаём: для публичного
+-- бакета она не нужна и лишь разрешила бы листинг всех файлов.
 -- ============================================================
 insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
-
-drop policy if exists "avatars public read" on storage.objects;
-create policy "avatars public read"
-  on storage.objects for select
-  using (bucket_id = 'avatars');
 
 -- ============================================================
 -- (Опционально) Демонстрационные данные.
