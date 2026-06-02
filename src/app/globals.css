@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Telegram-flavoured dark palette stored as RGB channels so Tailwind
+     opacity modifiers (bg-accent/60, etc.) resolve correctly. */
+  --bg: 10 11 13;
+  --surface: 17 19 23;
+  --surface-2: 23 26 32;
+  --fg: 233 235 239;
+  --muted: 139 145 156;
+  --accent: 47 136 255;
+  --accent-fg: 255 255 255;
+
+  /* Inherently translucent tokens kept as full color values. */
+  --border-color: rgba(255, 255, 255, 0.07);
+  --accent-soft: rgba(47, 136, 255, 0.14);
+}
+
+* {
+  border-color: var(--border-color);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior-y: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
