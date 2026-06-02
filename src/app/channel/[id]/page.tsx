@@ -1,85 +1,137 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { BadgeCheck, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { BadgeCheck, ExternalLink, Users, Tag } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/Avatar";
-import { buttonVariants } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { fetchChannel } from "@/lib/api";
-import { cn, formatCount } from "@/lib/utils";
+import { formatCount } from "@/lib/utils";
 import { useT } from "@/lib/store";
 import { haptic } from "@/lib/telegram";
 import type { Channel } from "@/types";
 
-export default function ChannelPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ChannelPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const t = useT();
-  // undefined = loading, null = not found
   const [channel, setChannel] = useState<Channel | null | undefined>(undefined);
 
   useEffect(() => {
     let active = true;
-    fetchChannel(id).then((data) => {
-      if (active) setChannel(data);
-    });
-    return () => {
-      active = false;
-    };
+    fetchChannel(id).then((data) => { if (active) setChannel(data); });
+    return () => { active = false; };
   }, [id]);
 
   return (
-    <div className="animate-fade-in">
+    <div>
       <PageHeader title={t("app.name")} back />
 
       {channel === undefined ? (
-        <div className="h-72 animate-pulse rounded-2xl bg-surface" />
+        <div className="space-y-4">
+          <Skeleton className="mx-auto h-24 w-24 rounded-2xl" />
+          <Skeleton className="mx-auto h-6 w-40 rounded-xl" />
+          <Skeleton className="h-28 w-full rounded-2xl" />
+        </div>
       ) : channel === null ? (
-        <p className="mt-12 text-center text-sm text-muted">{t("channel.notFound")}</p>
+        <p className="mt-16 text-center text-sm text-muted-foreground">
+          {t("channel.notFound")}
+        </p>
       ) : (
-        <Card className="p-5">
-          <div className="flex flex-col items-center text-center">
-            <Avatar name={channel.title} src={channel.avatarUrl} size={88} rounded="xl" />
-            <div className="mt-3 flex items-center gap-1.5">
-              <h2 className="text-xl font-semibold">{channel.title}</h2>
-              {channel.verified ? <BadgeCheck size={18} className="text-accent" /> : null}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Hero card */}
+          <div className="rounded-2xl border border-border bg-card shadow-card">
+            {/* Avatar + identity */}
+            <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
+              <Avatar
+                name={channel.title}
+                src={channel.avatarUrl}
+                size={88}
+                rounded="2xl"
+              />
+              <div className="mt-4 flex items-center gap-1.5">
+                <h2 className="text-xl font-bold">{channel.title}</h2>
+                {channel.verified && (
+                  <BadgeCheck size={20} className="text-primary" />
+                )}
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                @{channel.username}
+              </p>
+              {channel.tags.length > 0 && (
+                <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+                  {channel.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant={tag === "GLOBAL" ? "primary" : "default"}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
-            <p className="text-sm text-muted">@{channel.username}</p>
 
-            <div className="mt-4 flex items-center gap-2">
-              {channel.tags.map((tag) => (
-                <Badge key={tag} tone={tag === "GLOBAL" ? "accent" : "default"}>
-                  {tag}
-                </Badge>
-              ))}
+            <Separator />
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 divide-x divide-border">
+              <div className="flex flex-col items-center gap-1 px-4 py-4">
+                <Users size={16} className="text-muted-foreground" />
+                <span className="text-lg font-bold">
+                  {formatCount(channel.subscribers)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {t("channels.subscribers")}
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-1 px-4 py-4">
+                <Tag size={16} className="text-muted-foreground" />
+                <span className="text-lg font-bold">{channel.niche || "—"}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("channel.niche")}
+                </span>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Description + CTA */}
+            <div className="px-5 py-5">
+              {channel.description && (
+                <p className="mb-5 text-sm leading-relaxed text-foreground/85">
+                  {channel.description}
+                </p>
+              )}
+              <Button
+                className="w-full"
+                size="lg"
+                asChild
+                onClick={() => haptic("medium")}
+              >
+                <a
+                  href={`https://t.me/${channel.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink size={18} />
+                  {t("channel.open")}
+                </a>
+              </Button>
             </div>
           </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-5 text-center">
-            <div>
-              <p className="text-lg font-semibold">{formatCount(channel.subscribers)}</p>
-              <p className="text-xs text-muted">{t("channels.subscribers")}</p>
-            </div>
-            <div>
-              <p className="text-lg font-semibold">{channel.niche}</p>
-              <p className="text-xs text-muted">{t("channel.niche")}</p>
-            </div>
-          </div>
-
-          <p className="mt-5 text-sm leading-relaxed text-foreground/90">{channel.description}</p>
-
-          <a
-            href={`https://t.me/${channel.username}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => haptic("medium")}
-            className={cn(buttonVariants({ variant: "primary", size: "lg" }), "mt-5 w-full")}
-          >
-            <ExternalLink size={18} />
-            {t("channel.open")}
-          </a>
-        </Card>
+        </motion.div>
       )}
     </div>
   );

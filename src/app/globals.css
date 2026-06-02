@@ -3,55 +3,75 @@
 @tailwind utilities;
 
 :root {
-  /* Telegram-flavoured dark palette stored as RGB channels so Tailwind
-     opacity modifiers (bg-accent/60, etc.) resolve correctly. */
-  --bg: 10 11 13;
-  --surface: 17 19 23;
-  --surface-2: 23 26 32;
-  --fg: 233 235 239;
-  --muted: 139 145 156;
-  --accent: 47 136 255;
-  --accent-fg: 255 255 255;
+  /* HSL channels — NO hsl() wrapper so Tailwind opacity modifiers work */
+  --background:    224 14%  6%;   /* #0d0f16 */
+  --foreground:    220 12% 92%;   /* #eaebef */
 
-  /* Inherently translucent tokens kept as full color values. */
-  --border-color: rgba(255, 255, 255, 0.07);
-  --accent-soft: rgba(47, 136, 255, 0.14);
+  --card:          224 12%  9%;   /* #12141f */
+  --card-foreground: 220 12% 92%;
+
+  --popover:       224 12% 11%;
+  --popover-foreground: 220 12% 92%;
+
+  --primary:       214 94% 58%;   /* #2b8cfc  Telegram blue */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary:     224 10% 14%;   /* #1b1d28 */
+  --secondary-foreground: 220 8% 72%;
+
+  --muted:         224 10% 14%;
+  --muted-foreground: 220 6% 50%; /* #7a7c8a */
+
+  --accent:        214 94% 58%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive:   0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:        224 8% 18%;    /* #262839 */
+  --input:         224 10% 12%;
+  --ring:          214 94% 58%;
+
+  --radius: 1rem;
 }
 
 * {
-  border-color: var(--border-color);
+  border-color: hsl(var(--border));
+  box-sizing: border-box;
 }
 
-html,
-body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
-  background-color: rgb(var(--bg));
-  color: rgb(var(--fg));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   padding-bottom: env(safe-area-inset-bottom);
   overscroll-behavior-y: none;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Shimmer for skeletons ── */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%);  }
 }
 
+/* ── Fade-in utility ── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }

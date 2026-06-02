@@ -5,17 +5,50 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "rgb(var(--bg) / <alpha-value>)",
-        surface: "rgb(var(--surface) / <alpha-value>)",
-        "surface-2": "rgb(var(--surface-2) / <alpha-value>)",
-        border: "var(--border-color)",
-        foreground: "rgb(var(--fg) / <alpha-value>)",
-        muted: "rgb(var(--muted) / <alpha-value>)",
-        accent: {
-          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
-          soft: "var(--accent-soft)",
-          foreground: "rgb(var(--accent-fg) / <alpha-value>)",
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        card: {
+          DEFAULT: "hsl(var(--card) / <alpha-value>)",
+          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
+        popover: {
+          DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+        },
+        primary: {
+          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+          foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+          foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+        },
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        ring: "hsl(var(--ring) / <alpha-value>)",
+        /* legacy aliases so existing code still compiles */
+        surface: "hsl(var(--card) / <alpha-value>)",
+        "surface-2": "hsl(var(--secondary) / <alpha-value>)",
+      },
+      borderRadius: {
+        DEFAULT: "var(--radius)",
+        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 2px)",
+        lg: "var(--radius)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
       },
       fontFamily: {
         sans: [
@@ -23,27 +56,26 @@ const config: Config = {
           "system-ui",
           "-apple-system",
           "Segoe UI",
-          "Roboto",
-          "Helvetica Neue",
-          "Arial",
           "sans-serif",
         ],
       },
-      borderRadius: {
-        xl: "16px",
-        "2xl": "20px",
-      },
-      boxShadow: {
-        soft: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 30px -12px rgba(0,0,0,0.6)",
-      },
       keyframes: {
-        "fade-in": {
-          from: { opacity: "0", transform: "translateY(6px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+        shimmer: {
+          from: { transform: "translateX(-100%)" },
+          to:   { transform: "translateX(100%)"  },
+        },
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
-        "fade-in": "fade-in 0.35s ease-out both",
+        shimmer: "shimmer 1.6s ease-in-out infinite",
+        "fade-up": "fade-up 0.3s ease-out both",
+      },
+      boxShadow: {
+        card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 2px 12px -4px rgba(0,0,0,0.5)",
+        glow: "0 0 20px -6px hsl(214 94% 58% / 0.35)",
       },
     },
   },

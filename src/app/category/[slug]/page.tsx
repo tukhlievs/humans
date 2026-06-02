@@ -4,12 +4,17 @@ import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ChannelCard } from "@/components/ChannelCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getCategory } from "@/lib/data";
 import { fetchChannelsByCategory } from "@/lib/api";
 import { useT } from "@/lib/store";
 import type { Channel } from "@/types";
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = use(params);
   const t = useT();
   const category = getCategory(slug);
@@ -21,27 +26,27 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     fetchChannelsByCategory(slug).then((data) => {
       if (active) setList(data);
     });
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [slug, category]);
 
   if (!category) notFound();
 
   return (
-    <div className="animate-fade-in">
+    <div>
       <PageHeader title={category.title} subtitle={category.subtitle} back />
 
       {list === null ? (
-        <div className="space-y-2.5">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[80px] animate-pulse rounded-2xl bg-surface" />
+        <div className="space-y-3">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[76px] w-full rounded-2xl" />
           ))}
         </div>
       ) : list.length === 0 ? (
-        <p className="mt-12 text-center text-sm text-muted">{t("channels.empty")}</p>
+        <p className="mt-16 text-center text-sm text-muted-foreground">
+          {t("channels.empty")}
+        </p>
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {list.map((channel, index) => (
             <ChannelCard key={channel.id} channel={channel} index={index} />
           ))}

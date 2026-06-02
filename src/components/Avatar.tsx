@@ -1,47 +1,50 @@
 import { cn, hueFromString, initials } from "@/lib/utils";
+import { AvatarRoot, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface AvatarProps {
   name: string;
   src?: string;
   size?: number;
   className?: string;
-  rounded?: "full" | "xl";
+  rounded?: "full" | "xl" | "2xl";
 }
 
 export function Avatar({ name, src, size = 48, className, rounded = "full" }: AvatarProps) {
   const hue = hueFromString(name);
-  const radius = rounded === "full" ? "rounded-full" : "rounded-2xl";
-
-  if (src) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={src}
-        alt={name}
-        width={size}
-        height={size}
-        className={cn(radius, "object-cover", className)}
-        style={{ width: size, height: size }}
-      />
-    );
-  }
+  const radius =
+    rounded === "full" ? "rounded-full" :
+    rounded === "xl"   ? "rounded-xl"   :
+                         "rounded-2xl";
+  const fontSize = Math.round(size * 0.36);
 
   return (
-    <div
-      className={cn(
-        radius,
-        "flex shrink-0 items-center justify-center font-semibold text-white",
-        className,
-      )}
-      style={{
-        width: size,
-        height: size,
-        fontSize: size * 0.36,
-        background: `linear-gradient(140deg, hsl(${hue} 70% 26%), hsl(${(hue + 28) % 360} 78% 42%))`,
-      }}
-      aria-hidden
+    <AvatarRoot
+      className={cn(radius, className)}
+      style={{ width: size, height: size, minWidth: size }}
     >
-      {initials(name)}
-    </div>
+      {src && (
+        <AvatarImage
+          src={src}
+          alt={name}
+          className={radius}
+        />
+      )}
+      <AvatarFallback
+        className={cn(
+          radius,
+          "font-semibold text-white select-none",
+        )}
+        style={{
+          fontSize,
+          background: `linear-gradient(145deg,
+            hsl(${hue} 65% 24%),
+            hsl(${(hue + 25) % 360} 80% 40%)
+          )`,
+        }}
+        delayMs={0}
+      >
+        {initials(name)}
+      </AvatarFallback>
+    </AvatarRoot>
   );
 }

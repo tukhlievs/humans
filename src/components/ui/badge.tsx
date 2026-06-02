@@ -1,21 +1,28 @@
-import type { HTMLAttributes } from "react";
+import { type HTMLAttributes } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  tone?: "default" | "accent";
-}
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide transition-colors",
+  {
+    variants: {
+      variant: {
+        default:     "bg-secondary text-muted-foreground",
+        primary:     "bg-primary/15 text-primary",
+        outline:     "border border-border text-muted-foreground",
+        destructive: "bg-destructive/15 text-destructive",
+      },
+    },
+    defaultVariants: { variant: "default" },
+  },
+);
 
-export function Badge({ className, tone = "default", ...props }: BadgeProps) {
+export interface BadgeProps
+  extends HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {}
+
+export function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium tracking-wide",
-        tone === "accent"
-          ? "bg-accent-soft text-accent"
-          : "bg-surface-2 text-muted",
-        className,
-      )}
-      {...props}
-    />
+    <span className={cn(badgeVariants({ variant }), className)} {...props} />
   );
 }

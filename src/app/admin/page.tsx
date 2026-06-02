@@ -3,9 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { Check } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { useApp } from "@/lib/store";
 import { getInitData, haptic } from "@/lib/telegram";
 import { createChannel } from "@/lib/api";
@@ -17,31 +17,33 @@ const REGION_TAGS: RegionTag[] = ["CIS", "GLOBAL"];
 
 export default function AdminPage() {
   const { isAdmin, t } = useApp();
-
-  const [username, setUsername] = useState("");
-  const [category, setCategory] = useState<CategorySlug | "">("");
-  const [niche, setNiche] = useState("");
-  const [tags, setTags] = useState<RegionTag[]>([]);
-  const [verified, setVerified] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [username, setUsername]   = useState("");
+  const [category, setCategory]   = useState<CategorySlug | "">("");
+  const [niche, setNiche]         = useState("");
+  const [tags, setTags]           = useState<RegionTag[]>([]);
+  const [verified, setVerified]   = useState(false);
+  const [pending, setPending]     = useState(false);
+  const [status, setStatus]       = useState<{ ok: boolean; text: string } | null>(null);
 
   if (!isAdmin) {
     return (
-      <div className="animate-fade-in">
+      <div>
         <PageHeader title={t("admin.title")} back />
-        <p className="mt-12 text-center text-sm text-muted">{t("admin.denied")}</p>
+        <p className="mt-16 text-center text-sm text-muted-foreground">
+          {t("admin.denied")}
+        </p>
       </div>
     );
   }
 
   const toggleTag = (tag: RegionTag) =>
-    setTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
+    setTags((prev) =>
+      prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag],
+    );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !category || pending) return;
-
     setPending(true);
     setStatus(null);
     const { channel, error } = await createChannel(getInitData(), {
@@ -52,27 +54,26 @@ export default function AdminPage() {
       verified,
     });
     setPending(false);
-
     if (channel) {
       haptic("medium");
       setStatus({ ok: true, text: `${t("admin.success")}: ${channel.title}` });
-      setUsername("");
-      setNiche("");
-      setTags([]);
-      setVerified(false);
+      setUsername(""); setNiche(""); setTags([]); setVerified(false);
     } else {
       setStatus({ ok: false, text: error ?? t("form.error") });
     }
   };
 
   return (
-    <div className="animate-fade-in">
+    <div>
       <PageHeader title={t("admin.title")} subtitle={t("admin.subtitle")} back />
 
-      <Card className="p-5">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="rounded-2xl border border-border bg-card shadow-card">
+        <form onSubmit={handleSubmit} className="space-y-5 p-5">
+          {/* Username */}
           <div>
-            <label className="mb-1.5 block text-sm text-muted">{t("admin.username")}</label>
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              {t("admin.username")}
+            </label>
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -82,19 +83,22 @@ export default function AdminPage() {
             />
           </div>
 
+          {/* Category */}
           <div>
-            <label className="mb-1.5 block text-sm text-muted">{t("admin.category")}</label>
-            <div className="grid grid-cols-2 gap-1.5">
+            <label className="mb-2 block text-xs font-medium text-muted-foreground">
+              {t("admin.category")}
+            </label>
+            <div className="grid grid-cols-2 gap-2">
               {categories.map((c) => (
                 <button
                   key={c.slug}
                   type="button"
                   onClick={() => setCategory(c.slug)}
                   className={cn(
-                    "h-11 rounded-xl px-2 text-sm font-medium transition-colors",
+                    "h-11 rounded-xl text-sm font-semibold transition-all duration-150",
                     category === c.slug
-                      ? "bg-accent text-accent-foreground"
-                      : "border border-border bg-surface-2 text-muted hover:text-foreground",
+                      ? "bg-primary text-primary-foreground shadow-glow"
+                      : "border border-border bg-secondary text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {c.title}
@@ -103,8 +107,11 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* Niche */}
           <div>
-            <label className="mb-1.5 block text-sm text-muted">{t("admin.niche")}</label>
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              {t("admin.niche")}
+            </label>
             <Input
               value={niche}
               onChange={(e) => setNiche(e.target.value)}
@@ -112,19 +119,24 @@ export default function AdminPage() {
             />
           </div>
 
+          <Separator />
+
+          {/* Tags + verified */}
           <div>
-            <label className="mb-1.5 block text-sm text-muted">{t("admin.tags")}</label>
-            <div className="flex gap-1.5">
+            <label className="mb-2 block text-xs font-medium text-muted-foreground">
+              {t("admin.tags")}
+            </label>
+            <div className="flex flex-wrap gap-2">
               {REGION_TAGS.map((tag) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
                   className={cn(
-                    "h-9 rounded-lg px-3 text-sm font-medium transition-colors",
+                    "h-9 rounded-xl px-4 text-sm font-semibold transition-all duration-150",
                     tags.includes(tag)
-                      ? "bg-accent text-accent-foreground"
-                      : "border border-border bg-surface-2 text-muted hover:text-foreground",
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-secondary text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {tag}
@@ -134,25 +146,32 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => setVerified((v) => !v)}
                 className={cn(
-                  "ml-auto flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors",
+                  "flex h-9 items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition-all duration-150",
                   verified
-                    ? "bg-accent text-accent-foreground"
-                    : "border border-border bg-surface-2 text-muted hover:text-foreground",
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-secondary text-muted-foreground hover:text-foreground",
                 )}
               >
-                {verified ? <Check size={15} /> : null}
+                {verified && <Check size={14} />}
                 {t("admin.verified")}
               </button>
             </div>
           </div>
 
-          <p className="text-xs leading-relaxed text-muted">{t("admin.hint")}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {t("admin.hint")}
+          </p>
 
-          {status ? (
-            <p className={cn("text-sm", status.ok ? "text-accent" : "text-red-400")}>
+          {status && (
+            <p
+              className={cn(
+                "text-sm font-medium",
+                status.ok ? "text-primary" : "text-destructive",
+              )}
+            >
               {status.text}
             </p>
-          ) : null}
+          )}
 
           <Button
             type="submit"
@@ -163,7 +182,7 @@ export default function AdminPage() {
             {pending ? t("admin.adding") : t("admin.submit")}
           </Button>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }
