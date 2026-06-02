@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ChannelCard } from "@/components/ChannelCard";
@@ -9,21 +9,22 @@ import { fetchChannelsByCategory } from "@/lib/api";
 import { useT } from "@/lib/store";
 import type { Channel } from "@/types";
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
+export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const t = useT();
-  const category = getCategory(params.slug);
+  const category = getCategory(slug);
   const [list, setList] = useState<Channel[] | null>(null);
 
   useEffect(() => {
     if (!category) return;
     let active = true;
-    fetchChannelsByCategory(params.slug).then((data) => {
+    fetchChannelsByCategory(slug).then((data) => {
       if (active) setList(data);
     });
     return () => {
       active = false;
     };
-  }, [params.slug, category]);
+  }, [slug, category]);
 
   if (!category) notFound();
 

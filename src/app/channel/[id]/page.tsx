@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { BadgeCheck, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
@@ -13,20 +13,21 @@ import { useT } from "@/lib/store";
 import { haptic } from "@/lib/telegram";
 import type { Channel } from "@/types";
 
-export default function ChannelPage({ params }: { params: { id: string } }) {
+export default function ChannelPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const t = useT();
   // undefined = loading, null = not found
   const [channel, setChannel] = useState<Channel | null | undefined>(undefined);
 
   useEffect(() => {
     let active = true;
-    fetchChannel(params.id).then((data) => {
+    fetchChannel(id).then((data) => {
       if (active) setChannel(data);
     });
     return () => {
       active = false;
     };
-  }, [params.id]);
+  }, [id]);
 
   return (
     <div className="animate-fade-in">
